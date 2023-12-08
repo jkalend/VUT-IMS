@@ -1,19 +1,25 @@
 #include <iostream>
+#include <limits>
 #include <simlib.h>
+#include <unistd.h>
 
-Queue StarshipQueue;   // starship ready
-Queue BoosterQueue;    // booster ready
-Queue PermissionQueue; // waiting for permission
-Queue MarsQueue;       // mars ready
-Queue FAAQueue;        // queue of assigned FAA permission
-Queue OrbitingRockets; // launched rockets waiting for tanking
-Queue TankerQueue;     // Boosters with tankers
+Queue StarshipQueue("Starship Queue");           // starship ready
+Queue BoosterQueue("Booster Queue");             // booster ready
+Queue PermissionQueue("Permission Queue");       // waiting for permission
+Queue MarsQueue("Mars Queue");                   // mars ready
+Queue FAAQueue("FAA Queue");                     // queue of assigned FAA permission
+Queue OrbitingRockets("Orbiting Rockets Queue"); // launched rockets waiting for tanking
+Queue TankerQueue("Tanker Queue");               // Boosters with tankers
+Queue OnOrbitQueue("On Orbit Queue");            // Queue of rockets waiting on orbit
 
-Facility launchPad("launchPad");
-Facility tanker("Tanker");
+Store launchPad("launchPad", 1);
+Store tanker("Tanker", 1);
 
-bool OnOrbitFlag = false;
-
+int reachedMars = 0, returnedFromMars = 0;
+int num_boosters = 10, num_starships = 80, num_starships_initial = 80;
+int payload_size = 10000;
+int tons_of_material = payload_size;
+int tons_reached_mars = 0;
 class BoosterProcess : public Process {
     void Behavior();
 };
@@ -21,9 +27,10 @@ class BoosterProcess : public Process {
 class StarshipProcess : public Process {
     void Behavior();
 };
-
+int mars_count = 0;
 class MarsProcess : public Process {
     void Behavior() {
+        mars_count++;
         Into(MarsQueue);
         while (!FAAQueue.Empty()) { // wait for all permissions to clear
             Entity *p = FAAQueue.GetFirst();
@@ -41,7 +48,6 @@ class FAAProcess : public Process {
             Into(FAAQueue);
             Passivate();
         }
-        // std::cout << "Permission granted" << std::endl;
         Entity *p = PermissionQueue.GetFirst();
         p->Activate();
     }
@@ -54,44 +60,53 @@ public:
         priority = prio;
     }
     void Behavior() {
-        Seize(launchPad, priority);
+        Enter(launchPad);
         Wait(Exponential(240)); // the launch pad repair process takes 10 days exponentially
-        Release(launchPad);
-        // std::cout << "Leave facility" << std::endl;
+        Leave(launchPad);
     }
 };
 
 class RocketProcess : public Process { // starting from rocket available
     void Behavior() {
+        if (!tons_of_material)
+            Cancel();
+        tons_of_material -= 100;
         Wait(Exponential(1440)); // 2 months for preparing rocket
         (new FAAProcess)->Activate();
         Into(PermissionQueue);
         Passivate();
         Wait(48); // 2 days to move rocket to launch pad
 
-        // std::cout << "Enter facility" << std::endl;
         (new LaunchPadProcess)->Activate(); // activate the launch pad repair process
-        // std::cout << "Flying" << std::endl;
 
-        Wait(1);                          // 1h time to reach orbit
+        Wait(0.167);                      // 1h time to reach orbit
         (new BoosterProcess)->Activate(); // return back used booster
-        OnOrbitFlag = true;
-        Into(OrbitingRockets);
-        std::cout << "Waiting for refuelling" << std::endl;
-        Passivate(); // waiting for refuelling
-        std::cout << "Refuelling" << std::endl;
-        Wait(4); // refuelling takes 4h
-        TankerQueue.GetFirst()->Activate();
-        (new BoosterProcess)->Activate(); // return back used booster
-        Wait(Uniform(1920, 3600));        // time to get to mars
-        Wait(Exponential(120));           // time to refuel on mars
-        Wait(Uniform(1920, 3600));        // time to return back to earth
+
+        for (int i = 0; i < 6; i++) {
+            Into(OrbitingRockets);
+            Passivate(); // waiting for refuelling
+            TankerQueue.GetFirst()->Activate();
+            Wait(4); // refuelling takes 4h
+        }
+
+        Wait(Uniform(1920, 3600)); // time to get to mars
+        reachedMars++;
+        tons_reached_mars += 100;
+        if (tons_reached_mars == payload_size) {
+            Stop();
+        }
+        Wait(Exponential(120));    // time to refuel on mars
+        Wait(Uniform(1920, 3600)); // time to return back to earth
         (new StarshipProcess)->Activate();
-        std::cout << "Got here" << std::endl;
+        returnedFromMars++;
     }
 };
 
 void StarshipProcess::Behavior() { // starship ready
+
+    if (StarshipQueue.Length() == num_starships_initial && tons_reached_mars == 1000) {
+        Stop();
+    }
     if (!BoosterQueue.Empty()) {
         Entity *p = BoosterQueue.GetFirst();
         p->Activate();
@@ -106,24 +121,22 @@ void StarshipProcess::Behavior() { // starship ready
 
 // booster ready
 void BoosterProcess::Behavior() {
-    if (OnOrbitFlag && !tanker.Busy()) {
-        Seize(tanker);
+    if (!OrbitingRockets.Empty() && !tanker.Full()) {
+        Enter(tanker);
         Wait(48);                              // assemble tanker with booster
         (new LaunchPadProcess(1))->Activate(); // activate the launch pad repair process
-        Wait(1);                               // time to reach orbit
+        Wait(0.167);                           // time to reach orbit
+        (new BoosterProcess)->Activate();      // return back used booster
         OrbitingRockets.GetFirst()->Activate();
-        OnOrbitFlag = false;
         Into(TankerQueue);
         Passivate();
-        Release(tanker);
+        Leave(tanker);
 
     } else if (!StarshipQueue.Empty()) {
-        // std::cout << "Entered BoosterQueue" << std::endl;
         Entity *p = StarshipQueue.GetFirst();
         p->Activate();
         (new RocketProcess)->Activate();
     } else {
-        // std::cout << "Entered BoosterQueue" << std::endl;
         Into(BoosterQueue);
         Passivate();
     }
@@ -131,15 +144,23 @@ void BoosterProcess::Behavior() {
 
 class StarshipGenerator : public Event { // GENERATOR Starship
     void Behavior() {
-        (new StarshipProcess)->Activate();
-        Activate(Time + Exponential(7)); // 1 weeks exponentionally
+        if (num_starships > 0 || !tons_of_material) {
+            (new StarshipProcess)->Activate();
+            num_starships--;
+
+            Activate(Time + Exponential(168)); // 1 weeks exponentionally
+        }
     }
 };
 
 class BoosterGenerator : public Event { // GENERATOR Booster
     void Behavior() {
-        (new BoosterProcess)->Activate();
-        Activate(Time + Exponential(56)); // 8 weeks exponentially
+        if (num_boosters > 0 || !tons_of_material) {
+            (new BoosterProcess)->Activate();
+            num_boosters--;
+
+            Activate(Time + Exponential(504)); // 3 weeks exponentially
+        }
     }
 };
 
@@ -150,11 +171,57 @@ class MarsGenerator : public Event {
     }
 };
 
-int main() {
+int main(int argc, char *argv[]) {
+    int opt, payload_size = 10000;
+    while ((opt = getopt(argc, argv, ":hs:b:l:t:T:")) != -1) {
+        switch (opt) {
+        case 'h': {
+            std::cout << "./ims [-s <starships>] [-b <boosters>] [-l <launchpads>] [-t <tankers>] [-p <payload>]" << std::endl;
+            exit(0);
+        }
+        case 'p': {
+            payload_size = std::stoi(optarg);
+            payload_size = (payload_size % 100 == 0) ? payload_size : payload_size + (100 - payload_size % 100);
+            break;
+        }
+        case 's': {
+            num_starships = std::stoi(optarg);
+            break;
+        }
+        case 'b': {
+            num_boosters = std::stoi(optarg);
+            break;
+        }
+        case 'l': {
+            launchPad.SetCapacity(std::stoi(optarg));
+            break;
+        }
+        case 't': {
+            tanker.SetCapacity(std::stoi(optarg));
+            break;
+        }
+        case '?': {
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    for (; optind < argc; optind++) {
+        printf("extra arguments : %s\n", argv[optind]);
+    }
     SetOutput("model2.out");
-    Init(0, 10000); // experiment initialization for time 0..1000
-    (new BoosterGenerator)->Activate();
-    (new StarshipGenerator)->Activate();
+    Init(0, std::numeric_limits<double>::max()); // experiment initialization for time 0..1000
+    BoosterGenerator *BGen = new BoosterGenerator;
+    BGen->Activate();
+    StarshipGenerator *SGen = new StarshipGenerator;
+    SGen->Activate();
     (new MarsGenerator)->Activate();
     Run();
+    SIMLIB_statistics.Output();
+    launchPad.Output();
+    StarshipQueue.Output();
+    BoosterQueue.Output();
+    FAAQueue.Output();
+    PermissionQueue.Output();
 }
