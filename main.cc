@@ -3,14 +3,14 @@
 #include <simlib.h>
 #include <unistd.h>
 
-Queue StarshipQueue("Starship Queue");           // starship ready
-Queue BoosterQueue("Booster Queue");             // booster ready
-Queue PermissionQueue("Permission Queue");       // waiting for permission
-Queue MarsQueue("Mars Queue");                   // mars ready
-Queue FAAQueue("FAA Queue");                     // queue of assigned FAA permission
-Queue OrbitingRockets("Orbiting Rockets Queue"); // launched rockets waiting for tanking
-Queue TankerQueue("Tanker Queue");               // Boosters with tankers
-Queue OnOrbitQueue("On Orbit Queue");            // Queue of rockets waiting on orbit
+Queue StarshipQueue("Starship Queue");            // starship ready
+Queue BoosterQueue("Booster Queue");              // booster ready
+Queue PermissionQueue("Permission Queue");        // waiting for permission
+Queue MarsQueue("Mars Queue");                    // mars ready
+Queue FAAQueue("FAA Queue");                      // queue of assigned FAA permission
+Queue OrbitingRockets("Orbiting Rockets Queue");  // launched rockets waiting for tanking
+Queue TankerQueue("Tanker Queue");                // Boosters with tankers
+Queue LaunchingRocketsQueue("Launching rockets"); // Queue of rockets waiting on orbit
 
 Store launchPad("launchPad", 1);
 Store tanker("Tanker", 1);
@@ -38,6 +38,7 @@ class MarsProcess : public Process {
         }
         Wait(1440); // mars is available for 2 months
         MarsQueue.Clear();
+        std::cout << "Mars leaving" << std::endl;
     }
 };
 
@@ -60,12 +61,35 @@ public:
         priority = prio;
     }
     void Behavior() {
+
         Enter(launchPad);
+        (LaunchingRocketsQueue.GetFirst())->Activate();
+        // std::cout << "Entering launch pad " << launchPad.Used() << std::endl;
         Wait(Exponential(240)); // the launch pad repair process takes 10 days exponentially
         Leave(launchPad);
+        // std::cout << "Leaving launch pad" << std::endl;
     }
 };
 
+class TankerProcess : public Process {
+    void Behavior() {
+        Enter(tanker);
+        Wait(48); // assemble tanker with booster
+        Into(LaunchingRocketsQueue);
+        (new LaunchPadProcess(1))->Activate(); // activate the launch pad repair process
+        Passivate();
+        // std::cout << "Launching tanker" << std::endl;
+        Wait(0.167); // time to reach orbit
+        (new BoosterProcess)->Activate();
+        Wait(4); // time to refuel
+        // OrbitingRockets.GetFirst()->Activate();
+        // Into(TankerQueue);
+        // Passivate();
+        Leave(tanker);
+        (TankerQueue.GetFirst())->Activate();
+        //     std::cout << "Leaving tanker" << std::endl;
+    }
+};
 class RocketProcess : public Process { // starting from rocket available
     void Behavior() {
         if (!tons_of_material)
@@ -76,29 +100,39 @@ class RocketProcess : public Process { // starting from rocket available
         Into(PermissionQueue);
         Passivate();
         Wait(48); // 2 days to move rocket to launch pad
-
+        Into(LaunchingRocketsQueue);
         (new LaunchPadProcess)->Activate(); // activate the launch pad repair process
-
+        Passivate();
+        std::cout << "Rocket launched" << std::endl;
         Wait(0.167);                      // 1h time to reach orbit
         (new BoosterProcess)->Activate(); // return back used booster
 
         for (int i = 0; i < 6; i++) {
-            Into(OrbitingRockets);
-            Passivate(); // waiting for refuelling
-            TankerQueue.GetFirst()->Activate();
-            Wait(4); // refuelling takes 4h
+            if (!BoosterQueue.Empty()) {
+                (BoosterQueue.GetFirst())->Activate();
+                Into(TankerQueue);
+                (new TankerProcess)->Activate();
+                Passivate();
+                //(TankerQueue.GetFirst())->Activate();
+            } else {
+                Into(OrbitingRockets);
+                std::cout << "Orbiting " << OrbitingRockets.Length() << std::endl;
+                Passivate();
+            }
         }
-
+        std::cout << "Going off " << OrbitingRockets.Length() << std::endl;
         Wait(Uniform(1920, 3600)); // time to get to mars
         reachedMars++;
         tons_reached_mars += 100;
         if (tons_reached_mars == payload_size) {
+            std::cout << "Simulation stopped" << std::endl;
             Stop();
         }
         Wait(Exponential(120));    // time to refuel on mars
         Wait(Uniform(1920, 3600)); // time to return back to earth
         (new StarshipProcess)->Activate();
         returnedFromMars++;
+        std::cout << "Returned from mars " << OrbitingRockets.Length() << std::endl;
     }
 };
 
@@ -107,7 +141,8 @@ void StarshipProcess::Behavior() { // starship ready
     if (StarshipQueue.Length() == num_starships_initial && tons_reached_mars == 1000) {
         Stop();
     }
-    if (!BoosterQueue.Empty()) {
+    if (!BoosterQueue.Empty() && OrbitingRockets.Empty()) {
+        std::cout << "New rocket" << std::endl;
         Entity *p = BoosterQueue.GetFirst();
         p->Activate();
         // std::cout << "Creating Rocket Process" << std::endl;
@@ -121,18 +156,19 @@ void StarshipProcess::Behavior() { // starship ready
 
 // booster ready
 void BoosterProcess::Behavior() {
+    // std::cout << "Tanker full: " << tanker.Full() << std::endl;
+    //  std::cout << "Booster queue: " << BoosterQueue.Length() << std::endl;
+    // std::cout << "Booster started" << std::endl;
     if (!OrbitingRockets.Empty() && !tanker.Full()) {
-        Enter(tanker);
-        Wait(48);                              // assemble tanker with booster
-        (new LaunchPadProcess(1))->Activate(); // activate the launch pad repair process
-        Wait(0.167);                           // time to reach orbit
-        (new BoosterProcess)->Activate();      // return back used booster
-        OrbitingRockets.GetFirst()->Activate();
+        // std::cout << "Creating tanker" << std::endl;
         Into(TankerQueue);
+        (new TankerProcess)->Activate();
+        std::cout << "Before passivate" << std::endl;
         Passivate();
-        Leave(tanker);
-
-    } else if (!StarshipQueue.Empty()) {
+        std::cout << "Tanker creation in booster" << OrbitingRockets.Length() << std::endl;
+        OrbitingRockets.GetFirst()->Activate();
+    } else if (!StarshipQueue.Empty() && OrbitingRockets.Empty()) {
+        //  std::cout << "New rocket" << std::endl;
         Entity *p = StarshipQueue.GetFirst();
         p->Activate();
         (new RocketProcess)->Activate();
@@ -172,7 +208,7 @@ class MarsGenerator : public Event {
 };
 
 int main(int argc, char *argv[]) {
-    int opt, payload_size = 10000;
+    int opt;
     while ((opt = getopt(argc, argv, ":hs:b:l:t:T:")) != -1) {
         switch (opt) {
         case 'h': {
@@ -181,6 +217,7 @@ int main(int argc, char *argv[]) {
         }
         case 'p': {
             payload_size = std::stoi(optarg);
+
             payload_size = (payload_size % 100 == 0) ? payload_size : payload_size + (100 - payload_size % 100);
             break;
         }
@@ -210,18 +247,24 @@ int main(int argc, char *argv[]) {
     for (; optind < argc; optind++) {
         printf("extra arguments : %s\n", argv[optind]);
     }
+
     SetOutput("model2.out");
-    Init(0, std::numeric_limits<double>::max()); // experiment initialization for time 0..1000
+    Init(0, 100000); // experiment initialization for time 0..1000
     BoosterGenerator *BGen = new BoosterGenerator;
     BGen->Activate();
     StarshipGenerator *SGen = new StarshipGenerator;
     SGen->Activate();
     (new MarsGenerator)->Activate();
     Run();
+    std::cout << payload_size << std::endl;
+    std::cout << tons_reached_mars << std::endl;
+    std::cout << "rockets that reached Mars" << reachedMars << std::endl;
     SIMLIB_statistics.Output();
     launchPad.Output();
     StarshipQueue.Output();
     BoosterQueue.Output();
+    OrbitingRockets.Output();
+    TankerQueue.Output();
     FAAQueue.Output();
     PermissionQueue.Output();
 }
