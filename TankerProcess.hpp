@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include "BoosterProcess.hpp"
 
-extern int tankers;
+extern int tankers, booster_returned_from_tanker;
 
 class TankerProcess : public Process {
     void Behavior();

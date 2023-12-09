@@ -30,6 +30,7 @@ int nick0 = 0;
 int rockets = 0;
 int tankers = 0;
 int launchRockets = 0;
+int booster_returned_from_tanker = 0;
 int fills = 0;
 int enters = 0;
 int mars_count = 0;
@@ -114,9 +115,9 @@ int main(int argc, char *argv[]) {
     std::cout << "Number of launch pads: " << launchPad.Capacity() << std::endl;
     std::cout << "Number of tankers: " << tanker.Capacity() << std::endl;
     std::cout << "========================================" << std::endl;
-
+    
     SetOutput("model2.out");
-    Init(0, 50000); // experiment initialization for time 0..1000
+    Init(0, 300000); // experiment initialization for time 0..1000
     BoosterGenerator *BGen = new BoosterGenerator;
     BGen->Activate();
     StarshipGenerator *SGen = new StarshipGenerator;
@@ -138,6 +139,7 @@ int main(int argc, char *argv[]) {
     std::cout << "total tanker launches " << tankers << std::endl;
     std::cout << "total fills " << fills << std::endl;
     std::cout << "total enters " << enters << std::endl;
+    std::cout << "boosters returned by tankers " << booster_returned_from_tanker << std::endl;
     SIMLIB_statistics.Output();
     launchPad.Output();
     LaunchingRocketsQueue.Output();

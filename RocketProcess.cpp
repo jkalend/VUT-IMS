@@ -3,8 +3,7 @@
 void RocketProcess::Behavior() {
         int nick = nick0++; // DEBUG
 
-        if (!tons_of_material)
-            Cancel();
+        
         tons_of_material -= 100;
 
         rockets++;
@@ -24,7 +23,7 @@ void RocketProcess::Behavior() {
         (new LaunchPadProcess)->Activate(); // activate the launch pad repair process
         Passivate();
 
-        std::cout << "LAUNCHING " << nick << std::endl;
+        //std::cout << "LAUNCHING " << nick << std::endl;
         Wait(0.167);                      // 1h time to reach orbit
         (new BoosterProcess)->Activate(); // return back used booster
 
@@ -34,14 +33,14 @@ void RocketProcess::Behavior() {
                 Into(TankerQueue);
                 tankers++;
                 (new TankerProcess)->Activate();
-                // std::cout << "LAUNCHING TANKER MAIN " << LT << " i: " << i << " NICK: " << nick << std::endl;
+                 std::cout << "LAUNCHING TANKER MAIN " << " i: " << i << " NICK: " << nick << std::endl;
                 // std::cout << "TIME " << Time << std::endl;
                 //  if (!OrbitingRockets.Empty()) {
                 //      OrbitingRockets.GetFirst()->Activate();
                 //  }
                 Passivate();
             } else {
-                // std::cout << "WAITING FOR TANKER " << nick << " " << i << std::endl;
+                 std::cout << "WAITING FOR TANKER " << nick << " " << i << std::endl;
                 //  std::cout << "BOOSTERS " << BoosterQueue.Length() << std::endl;
                 Into(OrbitingRockets);
                 Passivate();
@@ -51,18 +50,18 @@ void RocketProcess::Behavior() {
             std::cout << "FILLING " << nick << " " << i << std::endl;
             // std::cout << "FILLS " << fills << std::endl;
         }
-        std::cout << "READY TO LEAVE ORBIT " << nick << std::endl;
+        //std::cout << "READY TO LEAVE ORBIT " << nick << std::endl;
         if (MarsQueue.Empty()) {
             Into(ReadyToDepart);
             Passivate();
         }
-        std::cout << "GOING OFF " << nick << std::endl
-                  << std::endl;
+        std::cout << "GOING OFF " << nick << std::endl;
+       //           << std::endl;
         // std::cout << "FILLS " << fills << std::endl;
         Wait(Uniform(1920, 3600)); // time to get to mars
         reachedMars++;
         tons_reached_mars += 100;
-        std::cout << "REACHED MARS " << nick << std::endl;
+        //std::cout << "REACHED MARS " << nick << std::endl;
         if (tons_reached_mars == payload_size) {
             std::cout << "Simulation stopped" << std::endl;
             Stop();
@@ -72,4 +71,5 @@ void RocketProcess::Behavior() {
         (new StarshipProcess)->Activate();
         returnedFromMars++;
         std::cout << "RETURNED FROM MARS " << nick << std::endl;
+        std::cout << "Material left " << tons_of_material << std::endl;
     }

@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 extern int mars_count;
-extern Queue MarsQueue, ReadyToDepart;
+extern Queue MarsQueue, ReadyToDepart, BoosterQueue, OrbitingRockets;
 
 class MarsProcess: public Process {
     void Behavior ();

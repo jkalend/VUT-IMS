@@ -12,6 +12,7 @@ void TankerProcess::Behavior() {
     // std::cout << "TIME " << Time << std::endl;
     Wait(0.167); // time to reach orbit
     (new BoosterProcess)->Activate();
+    booster_returned_from_tanker++;
     Wait(4); // time to refuel
     Leave(tanker);
     // std::cout << "LEAVING TANKER " << nick << std::endl;

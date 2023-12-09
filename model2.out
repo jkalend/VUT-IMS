@@ -1,0 +1,74 @@
+#
+# SIMLIB run-time statistics:
+#    StartTime  = 0
+#    EndTime    = 300000
+#    EventCount = 8290
+#    StepCount  = 0
+#
++----------------------------------------------------------+
+| STORE launchPad                                          |
++----------------------------------------------------------+
+|  Capacity = 1  (0 used, 1 free)                          |
+|  Time interval = 0 - 300000                              |
+|  Number of Enter operations = 648                        |
+|  Minimal used capacity = 0                               |
+|  Maximal used capacity = 1                               |
+|  Average used capacity = 0.557787                        |
++----------------------------------------------------------+
+  Input queue 'launchPad.Q'
++----------------------------------------------------------+
+| QUEUE Q                                                  |
++----------------------------------------------------------+
+|  Time interval = 0 - 300000                              |
+|  Incoming  533                                           |
+|  Outcoming  533                                          |
+|  Current length = 0                                      |
+|  Maximal length = 6                                      |
+|  Average length = 0.67102                                |
+|  Minimal time = 1.35673                                  |
+|  Maximal time = 2702.42                                  |
+|  Average time = 377.685                                  |
+|  Standard deviation = 407.56                             |
++----------------------------------------------------------+
+
++----------------------------------------------------------+
+| QUEUE Launching rockets                                  |
++----------------------------------------------------------+
+|  Time interval = 0 - 300000                              |
+|  Incoming  648                                           |
+|  Outcoming  648                                          |
+|  Current length = 0                                      |
+|  Maximal length = 6                                      |
+|  Average length = 0.67102                                |
+|  Minimal time = 0                                        |
+|  Maximal time = 2702.42                                  |
+|  Average time = 310.658                                  |
+|  Standard deviation = 396.782                            |
++----------------------------------------------------------+
++----------------------------------------------------------+
+| QUEUE Booster Queue                                      |
++----------------------------------------------------------+
+|  Time interval = 0 - 300000                              |
+|  Incoming  611                                           |
+|  Outcoming  601                                          |
+|  Current length = 10                                     |
+|  Maximal length = 10                                     |
+|  Average length = 6.1892                                 |
+|  Minimal time = 0                                        |
+|  Maximal time = 13863.9                                  |
+|  Average time = 1935.07                                  |
+|  Standard deviation = 2704.64                            |
++----------------------------------------------------------+
++----------------------------------------------------------+
+| QUEUE Orbiting Rockets Queue                             |
++----------------------------------------------------------+
+|  Time interval = 0 - 300000                              |
+|  Incoming  32                                            |
+|  Outcoming  23                                           |
+|  Current length = 9                                      |
+|  Maximal length = 12                                     |
+|  Average length = 10.0028                                |
+|  Minimal time = 0                                        |
+|  Maximal time = 194472                                   |
+|  Average time = 61575                                    |
++----------------------------------------------------------+
