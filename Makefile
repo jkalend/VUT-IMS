@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-g -O2 -Wall
+CFLAGS=-g -O2 -Wall -Werror -pedantic --std=c++17
 LDFLAGS=-lsimlib -lm
 EXECUTABLE=ims
 FILES=LaunchPadProcess.cpp BoosterProcess.cpp StarshipProcess.cpp FAAProcess.cpp RocketProcess.cpp TankerProcess.cpp MarsProcess.cpp
@@ -17,3 +17,6 @@ run: ims
 
 clean:
 	@rm -rf $(EXECUTABLE)* *.o
+
+pack:
+	zip xkubin27.zip *.cpp *.hpp Makefile

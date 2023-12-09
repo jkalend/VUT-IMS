@@ -67,12 +67,20 @@ class MarsGenerator : public Event {
 };
 
 int main(int argc, char *argv[]) {
-    int opt;
-    while ((opt = getopt(argc, argv, ":hs:b:l:t:p:")) != -1) {
+    int opt, initial_boosters = 0, initial_starships = 0;
+    while ((opt = getopt(argc, argv, ":hs:b:l:t:p:S:B:")) != -1) {
         switch (opt) {
         case 'h': {
-            std::cout << "./ims [-s <starships>] [-b <boosters>] [-l <launchpads>] [-t <tankers>] [-p <payload>]" << std::endl;
+            std::cout << "./ims [-s <starships>] [-b <boosters>] [-l <launchpads>] [-t <tankers>] [-p <payload>] [-B <initial boosters] [-S <initial starships>]" << std::endl;
             exit(0);
+        }
+        case 'B': {
+            initial_boosters = std::stoi(optarg);
+            break;
+        }
+        case 'S': {
+            initial_starships = std::stoi(optarg);
+            break;
         }
         case 'p': {
             payload_size = std::stoi(optarg);
@@ -117,7 +125,12 @@ int main(int argc, char *argv[]) {
     std::cout << "========================================" << std::endl;
     
     SetOutput("model2.out");
-    Init(0, 300000); // experiment initialization for time 0..1000
+    Init(0, 1000000); // experiment initialization for time 0..1000
+    for (int j = 0; j < initial_boosters; j++)
+        (new BoosterProcess)->Activate();
+    
+    for (int j = 0; j < initial_starships; j++)
+        (new StarshipProcess)->Activate();
     BoosterGenerator *BGen = new BoosterGenerator;
     BGen->Activate();
     StarshipGenerator *SGen = new StarshipGenerator;
@@ -135,7 +148,6 @@ int main(int argc, char *argv[]) {
     std::cout << "rockets in orbit " << OrbitingRockets.Length() << std::endl;
     std::cout << "total starship rockets " << rockets << std::endl;
     std::cout << "total starships launched " << launchRockets << std::endl;
-    // std::cout << "total boosters " << boosters << std::endl;
     std::cout << "total tanker launches " << tankers << std::endl;
     std::cout << "total fills " << fills << std::endl;
     std::cout << "total enters " << enters << std::endl;
@@ -143,9 +155,6 @@ int main(int argc, char *argv[]) {
     SIMLIB_statistics.Output();
     launchPad.Output();
     LaunchingRocketsQueue.Output();
-    // StarshipQueue.Output();
     BoosterQueue.Output();
     OrbitingRockets.Output();
-    // TankerQueue.Output();
-    // PermissionQueue.Output();
 }
