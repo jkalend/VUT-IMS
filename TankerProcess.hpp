@@ -1,3 +1,9 @@
+/*
+file: TankerProcess.hpp
+authors: xkubin27, xkalen07
+description: definition of TankerProcess class
+*/
+
 #ifndef TANKER
 #define TANKER
 

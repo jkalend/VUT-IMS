@@ -1,3 +1,9 @@
+/*
+file: LaunchPadProcess.cpp
+authors: xkubin27, xkalen07
+description: definition of LaunchPadProcess behavior
+*/
+
 #include "LaunchPadProcess.hpp"
 
 void LaunchPadProcess::Behavior() {

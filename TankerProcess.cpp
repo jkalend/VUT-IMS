@@ -1,3 +1,9 @@
+/*
+file: TankerProcess.cpp
+authors: xkubin27, xkalen07
+description: definition of TankerProcess behavior
+*/
+
 #include "TankerProcess.hpp"
 
 void TankerProcess::Behavior() {

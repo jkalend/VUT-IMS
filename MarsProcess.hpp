@@ -1,3 +1,9 @@
+/*
+file: MarsProcess.hpp
+authors: xkubin27, xkalen07
+description: definition of MarsProcess class
+*/
+
 #ifndef MARS
 #define MARS
 

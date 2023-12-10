@@ -1,3 +1,9 @@
+/*
+file: BoosterProcess.hpp
+authors: xkubin27, xkalen07
+description: definition of BoosterProcess class
+*/
+
 #ifndef BOOSTER
 #define BOOSTER
 

@@ -3,6 +3,7 @@ file: MarsProcess.cpp
 authors: xkubin27, xkalen07
 description: definition of MarsProcess behavior
 */
+
 #include "MarsProcess.hpp"
 
 void MarsProcess::Behavior() {

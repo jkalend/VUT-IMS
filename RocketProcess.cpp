@@ -1,3 +1,9 @@
+/*
+file: RocketProcess.cpp
+authors: xkubin27, xkalen07
+description: definition of RocketProcess behavior
+*/
+
 #include "RocketProcess.hpp"
 
 void RocketProcess::Behavior() {

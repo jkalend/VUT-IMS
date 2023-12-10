@@ -1,3 +1,9 @@
+/*
+file: RocketProcess.hpp
+authors: xkubin27, xkalen07
+description: definition of RocketProcess class
+*/
+
 #ifndef STARSHIP
 #define STARSHIP
 

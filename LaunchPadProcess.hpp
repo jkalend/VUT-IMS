@@ -1,3 +1,9 @@
+/*
+file: LaunchPadProcess.hpp
+authors: xkubin27, xkalen07
+description: definition of LaunchPadProcess class
+*/
+
 #ifndef LAUNCH_PAD
 #define LAUNCH_PAD
 

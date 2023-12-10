@@ -1,3 +1,9 @@
+/*
+file: main.cpp
+authors: xkubin27, xkalen07
+description: main function, definition of generators and output functions
+*/
+
 #include <iostream>
 #include <limits>
 #include <simlib.h>
@@ -151,7 +157,6 @@ int main(int argc, char *argv[]) {
     std::cout << "total tanker launches " << tankers << std::endl;
     std::cout << "total fills " << fills << std::endl;
     std::cout << "total enters " << enters << std::endl;
-    std::cout << "boosters returned by tankers " << booster_returned_from_tanker << std::endl;
     SIMLIB_statistics.Output();
     launchPad.Output();
     LaunchingRocketsQueue.Output();

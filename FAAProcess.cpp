@@ -1,3 +1,9 @@
+/*
+file: FAAProcess.cpp
+authors: xkubin27, xkalen07
+description: definition of FAAProcess behavior
+*/
+
 #include "FAAProcess.hpp"
 
 void FAAProcess::Behavior() {

@@ -1,3 +1,9 @@
+/*
+file: BoosterProcess.cpp
+authors: xkubin27, xkalen07
+description: definition of BoosterProcess behavior
+*/
+
 #include "BoosterProcess.hpp"
 
 void BoosterProcess::Behavior() {

@@ -1,3 +1,9 @@
+/*
+file: StarshipProcess.cpp
+authors: xkubin27, xkalen07
+description: definition of StarshipProcess behavior
+*/
+
 #include "StarshipProcess.hpp"
 
 void StarshipProcess::Behavior() { // starship ready
