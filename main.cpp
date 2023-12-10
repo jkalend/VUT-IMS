@@ -39,9 +39,6 @@ int launchRockets = 0;
 int booster_returned_from_tanker = 0;
 int fills = 0;
 int enters = 0;
-int mars_count = 0;
-
-TStat *st;
 
 class StarshipGenerator : public Event { // GENERATOR Starship
     void Behavior() {
@@ -90,7 +87,6 @@ int main(int argc, char *argv[]) {
         }
         case 'p': {
             payload_size = std::stoi(optarg);
-
             payload_size = (payload_size % 100 == 0) ? payload_size : payload_size + (100 - payload_size % 100);
             tons_of_material = payload_size;
             break;
@@ -122,13 +118,13 @@ int main(int argc, char *argv[]) {
         printf("extra arguments : %s\n", argv[optind]);
     }
 
-    std::cout << "========================================" << std::endl;
+    std::cout << "====================================================" << std::endl;
     std::cout << "Payload size: " << payload_size << std::endl;
     std::cout << "Number of starships: " << num_starships << std::endl;
     std::cout << "Number of boosters: " << num_boosters << std::endl;
     std::cout << "Number of launch pads: " << launchPad.Capacity() << std::endl;
     std::cout << "Number of tankers: " << tanker.Capacity() << std::endl;
-    std::cout << "========================================" << std::endl;
+    std::cout << "===================== STARTING =====================" << std::endl;
     
     SetOutput("model2.out");
     Init(0, 1000000); // experiment initialization for time 0..1000
@@ -146,17 +142,17 @@ int main(int argc, char *argv[]) {
     st = new TStat("TStat");
 
     Run();
-    std::cout << "========================================" << std::endl;
-    std::cout << payload_size << std::endl;
-    std::cout << tons_reached_mars << std::endl;
-    std::cout << "rockets that reached Mars " << reachedMars << std::endl;
-    std::cout << "rockets that returned from Mars " << returnedFromMars << std::endl;
-    std::cout << "rockets in orbit " << OrbitingRockets.Length() << std::endl;
-    std::cout << "total starship rockets " << rockets << std::endl;
-    std::cout << "total starships launched " << launchRockets << std::endl;
-    std::cout << "total tanker launches " << tankers << std::endl;
-    std::cout << "total fills " << fills << std::endl;
-    std::cout << "total enters " << enters << std::endl;
+    std::cout << "===================== STATS =====================" << std::endl;
+    std::cout << "Tons to be delivered" << payload_size << std::endl;
+    std::cout << "Tons delivered" << tons_reached_mars << std::endl;
+    std::cout << "Rockets that reached Mars " << reachedMars << std::endl;
+    std::cout << "Rockets that returned from Mars " << returnedFromMars << std::endl;
+    std::cout << "Rockets in orbit " << OrbitingRockets.Length() << std::endl;
+    std::cout << "Total starship rockets " << rockets << std::endl;
+    std::cout << "Total starships launched " << launchRockets << std::endl;
+    std::cout << "Total tanker launches " << tankers << std::endl;
+    std::cout << "Total refuels " << fills << std::endl;
+    std::cout << "Total launches" << enters << std::endl;
     SIMLIB_statistics.Output();
     launchPad.Output();
     LaunchingRocketsQueue.Output();

@@ -11,7 +11,6 @@ description: definition of MarsProcess class
 #include <simlib.h>
 #include <unistd.h>
 
-extern int mars_count;
 extern Queue MarsQueue, ReadyToDepart, BoosterQueue, OrbitingRockets;
 
 class MarsProcess: public Process {

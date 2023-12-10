@@ -7,7 +7,6 @@ description: definition of MarsProcess behavior
 #include "MarsProcess.hpp"
 
 void MarsProcess::Behavior() {
-    mars_count++;
     Into(MarsQueue);
     while (!ReadyToDepart.Empty()) { // wait for all rockets to launch
         ReadyToDepart.GetFirst()->Activate();
