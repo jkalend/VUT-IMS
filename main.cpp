@@ -139,12 +139,10 @@ int main(int argc, char *argv[]) {
     SGen->Activate();
     (new MarsGenerator)->Activate();
 
-    st = new TStat("TStat");
-
     Run();
     std::cout << "===================== STATS =====================" << std::endl;
-    std::cout << "Tons to be delivered" << payload_size << std::endl;
-    std::cout << "Tons delivered" << tons_reached_mars << std::endl;
+    std::cout << "Tons to be delivered " << payload_size << std::endl;
+    std::cout << "Tons delivered " << tons_reached_mars << std::endl;
     std::cout << "Rockets that reached Mars " << reachedMars << std::endl;
     std::cout << "Rockets that returned from Mars " << returnedFromMars << std::endl;
     std::cout << "Rockets in orbit " << OrbitingRockets.Length() << std::endl;
@@ -152,7 +150,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Total starships launched " << launchRockets << std::endl;
     std::cout << "Total tanker launches " << tankers << std::endl;
     std::cout << "Total refuels " << fills << std::endl;
-    std::cout << "Total launches" << enters << std::endl;
+    std::cout << "Total launches " << enters << std::endl;
     SIMLIB_statistics.Output();
     launchPad.Output();
     LaunchingRocketsQueue.Output();
