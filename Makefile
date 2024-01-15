@@ -19,4 +19,4 @@ clean:
 	@rm -rf $(EXECUTABLE)* *.o
 
 pack:
-	zip xkubin27.zip *.cpp *.hpp Makefile
+	zip T5_xkubin27_xkalen07.zip *.cpp *.hpp Makefile documentation.pdf
